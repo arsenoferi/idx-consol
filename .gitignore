@@ -1,0 +1,12 @@
+# Ignore everything at repository root
+/*
+
+# But do not ignore the .gitignore itself and the notebook we want to keep
+!/.gitignore
+!/data_cleaning.ipynb
+!/Ratio/
+!/dashboard.py
+!/data_cleaning.ipynb
+!/Asset/
+
+# End of file
