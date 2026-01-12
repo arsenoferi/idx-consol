@@ -11,7 +11,7 @@ from Ratio.chart import Chart
 
 company = ""
 
-# Set Page Configuration
+# Set Page Configuration & Design
 st.set_page_config(
     page_title="Dashboard",
     layout="wide",
