@@ -219,9 +219,9 @@ with st.container(border=True):
                 try:
                     num_val = float(val.replace('%', ''))
                     if num_val > 0:
-                        return 'color: red'
-                    elif num_val < 0:
                         return 'color: green'
+                    elif num_val < 0:
+                        return 'color: red'
                 except:
                     pass
             return ''
