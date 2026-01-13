@@ -213,7 +213,7 @@ with st.container(border=True):
     with st.container(border=True):
         df = FinancialRatio.expense_to_revenue_ratio()
         
-        # Function to apply color styling
+        # Function to apply color styling - hanya untuk kolom delta (Δ)
         def style_changes(val):
             if isinstance(val, str) and '%' in val:
                 try:
@@ -226,8 +226,11 @@ with st.container(border=True):
                     pass
             return ''
         
-        # Apply styling using pandas Styler
-        styled_df = df.style.map(style_changes)
+        # Dapatkan hanya kolom dengan (Δ)
+        delta_cols = [col for col in df.columns if '(Δ)' in str(col)]
+        
+        # Apply styling hanya pada kolom delta
+        styled_df = df.style.map(style_changes, subset=delta_cols)
         
         st.dataframe(styled_df)
     

@@ -270,7 +270,7 @@ class FinancialAnalyst:
             new_columns.append(columns[i])
             if i < len(columns) - 1:
                 # columns[i] is newer, columns[i+1] is older
-                change_col = f"{columns[i+1]} → {columns[i]} (Δ)"
+                change_col = f"{columns[i+1]} (Δ)"
                 revenue[change_col] = (revenue[columns[i]] - revenue[columns[i+1]]) * 100
         
         # Reorder columns to interleave date and change columns
@@ -278,16 +278,16 @@ class FinancialAnalyst:
         for i in range(len(columns)):
             final_columns.append(columns[i])
             if i < len(columns) - 1:
-                final_columns.append(f"{columns[i+1]} → {columns[i]} (Δ)")
+                final_columns.append(f"{columns[i+1]} (Δ)")
         
         revenue = revenue[final_columns]
         
-        # Format values - limit to 4 decimal places for date columns, add % to change columns
+        # Format values - convert to percentage for all columns
         for col in revenue.columns:
             if "(Δ)" in str(col):
                 revenue[col] = revenue[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else x)
             else:
-                revenue[col] = revenue[col].apply(lambda x: f"{x:.4f}" if pd.notna(x) else x)
+                revenue[col] = revenue[col].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else x)
         
         return revenue
         
