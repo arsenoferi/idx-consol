@@ -1,0 +1,53 @@
+/* Main Filter*/
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.st-bb{
+    background-color: #d6c3bf;
+    border-radius: 12px;
+    padding: 0.4rem 0.8rem;
+    display: flex;
+    align-items: center;
+}
+
+li[role="option"] {
+    background-color: #d6c3bf;
+}
+
+.filter-title {
+    font-weight: 600;
+    margin: 0;
+    padding-top: 0.4rem;
+}
+
+.st-emotion-cache-1ikpmoq {
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow:
+        4px 4px 4px 4px rgba(0,0,0,0.04),
+        -1px -1px 4px 4px rgba(0,0,0,0.04);
+    border: none;
+} 
+
+/* HANYA container dengan border=True */
+div[data-testid="stVerticalBlock"][data-border="true"] {
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow:
+        4px 4px 4px 4px rgba(0,0,0,0.04),
+        -1px -1px 4px 4px rgba(0,0,0,0.04);
+    border: none;
+}
+
+#main-filter-card div[data-testid="stVerticalBlock"][data-border="true"] {
+    border-radius: 18px;
+    background-color: #ffffff;
+    box-shadow: 0 0 8px 3px rgba(0,0,0,0.04);
+    padding: 16px;
+}
