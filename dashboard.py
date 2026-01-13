@@ -15,7 +15,7 @@ company = ""
 st.set_page_config(
     page_title="Dashboard",
     layout="wide",
-    initial_sidebar_state="expanded",
+    #initial_sidebar_state="expanded",
     page_icon = os.path.join(os.getcwd(),"Asset",'Favicion.png')
 )
 
@@ -45,99 +45,125 @@ def data_loader():
         
     return data
 
+#Load CSS
+def load_css(path):
+    with open(path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css("asset/style.css")
+
 # Dashboard Title (centered)
 company_list = data_loader()['Company'].unique().tolist() 
 
-with st.sidebar:
-    #filtered Data
-    st.header("Filter by Company : ")
-    
-    #Conditional company selection
-    if company == "":
-        option = st.sidebar.selectbox(
-            "", company_list + ['All Companies'],index=len(company_list)
-        )
-    else:
-        option = st.sidebar.selectbox(
-            "", company_list
-        )
-    
-    
-    if option != 'All Companies':
-        filtered_data = data_loader()[data_loader()['Company'] == option]
-    else:
-        filtered_data = data_loader()
-    
-    st.header("Filter by year : ")
-    years = filtered_data['Year'].unique().tolist()
+col1, col2 = st.columns([1, 15], gap="small")
+with col1:
+    st.image("Asset/Favicion.png", width=80)
 
-    #bisa all years select sorted dari terbaru ke terlama
-
-    selected_years = st.selectbox("",
-        options=['All Years'] + sorted(years, reverse=True),
-        index=0
+with col2:
+    st.markdown(
+        "<h2 style='margin:0; text-align:left;'>Financial Data Dashboard<br></h2>",
+        unsafe_allow_html=True
     )
 
-    if selected_years != 'All Years':
-        filtered_data = filtered_data[filtered_data['Year']<= selected_years]
-    
+#Container 1: Financial Overview As of 2023-12-31 (in Million)
+
+st.markdown("<div id='main-filter-card'>", unsafe_allow_html=True)
+with st.container(border=True):
+
+    # Title Container 1
+    filtered_data = data_loader()
+    last_year = pd.to_datetime(filtered_data['Date']).max()
+    last_year = last_year.date()
+
+    st.markdown(f"<h1 style='text-align: center;'>Financial Overview As of {last_year} (in Million)</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center; font-style: italic; text-align: center;'>This dashboard provides an overview of financial performance across all companies.<br></h4", unsafe_allow_html=True)
+
+    # START Container Main Filter
+    col_title, col1, col2 = st.columns([0.4, 2, 2])
+
+    # ---- Main Filter text ----
+    with col_title:
+        st.markdown(
+            "<div class='filter-title'>Main Filter:</div>",
+            unsafe_allow_html=True
+        )
+
+    # ---- Company filter ----
+    with col1:
+        option = st.selectbox(
+            "Companies",
+             ["All Companies"] + company_list,
+            label_visibility="collapsed"
+        )
+
+    # Apply company filter
+    if option != "All Companies":
+        filtered_data = data_loader()[data_loader()["Company"] == option]
+    else:
+        filtered_data = data_loader()
+
+    # ---- Year filter ----
+    with col2:
+
+        years = filtered_data["Year"].unique().tolist()
+        selected_years = st.selectbox(
+            "Year",
+            ["All Years"] + sorted(years, reverse=True),
+            label_visibility="collapsed"
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if selected_years != "All Years":
+        filtered_data = filtered_data[filtered_data["Year"] <= selected_years]
+
+    # END Container Main Filter
+
+    # ===== Downstream processing =====
     FinancialRatio = FinancialAnalyst(filtered_data)
     GeneralFunction = General(filtered_data)
     chart = Chart(filtered_data)
 
-if option != 'All Companies':
-    st.markdown(f"<h1 style='text-align: center;'>Financial Data Dashboard - {option}</h1>", unsafe_allow_html=True)
-else:
-    st.markdown(f"<h1 style='text-align: center;'>Financial Data Dashboard - All Companies</h1>", unsafe_allow_html=True)
+    # START Container 1-1 Financial Highlight
+    with st.container (border=True):
+        st.markdown(f"<h2 style='text-align: center; font-style: bold;'>Financial Highlight</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>This dashboard provides an overview of financial performance across all companies.<br></h6>", unsafe_allow_html=True)
 
-#last year in filtered data
-last_year = pd.to_datetime(filtered_data['Date']).max()
-last_year = last_year.date()
+        col_1,col_2,col_3 = st.columns(3)
 
-st.markdown(f"<h4 style='text-align: center;'>As of {last_year} (in Million)</h2><br>", unsafe_allow_html=True)
+        with col_1 :
+            with st.container(border=True):
+                data_rev, val_terakhir, growth_terakhir = FinancialRatio.asset()
+                st.metric(label="Total Asset", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
 
+        with col_2 :
+            with st.container(border=True):
+                data_rev, val_terakhir, growth_terakhir = FinancialRatio.liabilitas()
+                st.metric(label="Total Liabilitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
 
-#Container 1: Financial Highlight
+        with col_3 :
+            with st.container(border=True):
+                data_rev, val_terakhir, growth_terakhir = FinancialRatio.ekuitas()
+                st.metric(label="Total ekuitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
 
-with st.container(border=True):
-    st.markdown(f"<h2>Financial Highlight</h1><br>", unsafe_allow_html=True)
-    col_1,col_2,col_3 = st.columns(3)
+        col_4,col_5,col_6 = st.columns(3)
+
+        with col_4 :
+            with st.container(border=True):
+                data_rev, val_terakhir, growth_terakhir = FinancialRatio.net_income()
+                st.metric(label="Total Net Income", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+
+        with col_5 :
+            with st.container(border=True):
+                data_rev, val_terakhir, growth_terakhir = FinancialRatio.revenue()
+                st.metric(label="Total Revenue", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+
+        with col_6 :
+            with st.container(border=True):
+                data_rev, val_terakhir, growth_terakhir = FinancialRatio.expense()
+                st.metric(label="Total Expense", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
     
-    with col_1 :
-        with st.container(border=True):
-            data_rev, val_terakhir, growth_terakhir = FinancialRatio.asset()
-            st.metric(label="Total Asset", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
-
-    with col_2 :
-        with st.container(border=True):
-            data_rev, val_terakhir, growth_terakhir = FinancialRatio.liabilitas()
-            st.metric(label="Total Liabilitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
-
-    with col_3 :
-        with st.container(border=True):
-            data_rev, val_terakhir, growth_terakhir = FinancialRatio.ekuitas()
-            st.metric(label="Total ekuitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
-
-    col_4,col_5,col_6 = st.columns(3)
-
-    with col_4 :
-        with st.container(border=True):
-            data_rev, val_terakhir, growth_terakhir = FinancialRatio.net_income()
-            st.metric(label="Total Net Income", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
-
-    with col_5 :
-        with st.container(border=True):
-            data_rev, val_terakhir, growth_terakhir = FinancialRatio.revenue()
-            st.metric(label="Total Revenue", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
-
-    with col_6 :
-        with st.container(border=True):
-            data_rev, val_terakhir, growth_terakhir = FinancialRatio.expense()
-            st.metric(label="Total Expense", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Asset", "Liabilitas", "Ekuitas", "Revenue", "Expense"])    
     
-    # buat tab untuk asset, liabilitas, ekuitas, net income, revenue, expense
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Asset", "Liabilitas", "Ekuitas", "Revenue", "Expense"])
-        
     with tab1:
         # st.plotly_chart(chart.trends_chart('10','debit','Asset Trend Chart'), use_container_width=True)
         st.write(chart.trends_chart('10','debit','Asset Trend Chart'))
@@ -165,9 +191,8 @@ with st.container(border=True):
         GeneralFunction.extends_dataframe(expense)
         
 # Container 2: Financial Ratio
-
 with st.container(border=True):
-    st.markdown(f"<h2>Financial Ratio</h1><br>", unsafe_allow_html=True)
+    st.markdown(f"<h2>Financial Ratio</h2><br>", unsafe_allow_html=True)
     
     col_1,col_2,col_3,col_4 = st.columns(4)
 
