@@ -142,47 +142,27 @@ with st.container(border=True):
         # st.plotly_chart(chart.trends_chart('10','debit','Asset Trend Chart'), use_container_width=True)
         st.write(chart.trends_chart('10','debit','Asset Trend Chart'))
         asset = GeneralFunction.comparative_balance('10','debit')
-        styled_balance = asset.style.map(
-                style_balance_changes, 
-                subset=[col for col in asset.columns if '(Δ)' in str(col)]
-            )
-        GeneralFunction.extends_dataframe(styled_balance)
+        GeneralFunction.extends_dataframe(asset)
 
     with tab2:
         st.write(chart.trends_chart('20','credit','Liabilitas Trend Chart'))
         liabilitas = GeneralFunction.comparative_balance('20','credit')
-        styled_balance = liabilitas.style.map(
-                style_balance_changes, 
-                subset=[col for col in liabilitas.columns if '(Δ)' in str(col)]
-            )
-        GeneralFunction.extends_dataframe(styled_balance)
+        GeneralFunction.extends_dataframe(liabilitas)
     
     with tab3:
         st.write(chart.trends_chart('30','credit','Ekuitas Trend Chart'))
         ekuitas = GeneralFunction.comparative_balance('30','credit')
-        styled_balance = ekuitas.style.map(
-                style_balance_changes, 
-                subset=[col for col in ekuitas.columns if '(Δ)' in str(col)]
-            )
-        GeneralFunction.extends_dataframe(styled_balance)
+        GeneralFunction.extends_dataframe(ekuitas)
 
     with tab4:
         st.write(chart.trends_chart('40','credit','Revenue Trend Chart'))
         revenue = GeneralFunction.comparative_balance('40','credit')
-        styled_balance = revenue.style.map(
-                style_balance_changes, 
-                subset=[col for col in revenue.columns if '(Δ)' in str(col)]
-            )
-        GeneralFunction.extends_dataframe(styled_balance)
+        GeneralFunction.extends_dataframe(revenue)
         
     with tab5:
         st.write(chart.trends_chart('50','debit','Expense Trend Chart'))
         expense = GeneralFunction.comparative_balance('50','debit')
-        styled_balance = expense.style.map(
-                style_balance_changes, 
-                subset=[col for col in expense.columns if '(Δ)' in str(col)]
-            )
-        GeneralFunction.extends_dataframe(styled_balance)
+        GeneralFunction.extends_dataframe(expense)
         
 # Container 2: Financial Ratio
 
