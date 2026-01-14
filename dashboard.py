@@ -55,20 +55,20 @@ load_css("asset/style.css")
 # Dashboard Title (centered)
 company_list = data_loader()['Company'].unique().tolist() 
 
-col1, col2 = st.columns([1, 15], gap="small")
-with col1:
-    st.image("Asset/Favicion.png", width=80)
+# col1, col2 = st.columns([1, 15], gap="small")
+# # with col1:
+# #     st.image("Asset/Favicion.png", width=80)
 
-with col2:
-    st.markdown(
-        "<h2 style='margin:0; text-align:left;'>Financial Dashboard<br></h2>",
-        unsafe_allow_html=True
-    )
+# # with col2:
+# #     st.markdown(
+# #         "<h2 style='margin:0; text-align:left;'>Financial Dashboard<br></h2>",
+# #         unsafe_allow_html=True
+# #     )
 
 #Container 1: Financial Overview As of 2023-12-31
 
 st.markdown("<div id='main-filter-card'>", unsafe_allow_html=True)
-with st.container(border=True):
+with st.container(border=True,key='main-financial-overview'):
 
     # Title Container 1
     filtered_data = data_loader()
@@ -83,6 +83,14 @@ with st.container(border=True):
 
     # START Container Main Filter
     with st.container(border=True, key="filter-style"):
+        col_logo,col_bursa= st.columns([1,15], gap="small")
+        with col_logo:
+            st.image("Asset/Favicion.png", width=50)
+        with col_bursa:
+            st.markdown(
+                "<h2 style='margin:0; text-align:left;'>Financial Dashboard<br></h2>",
+                unsafe_allow_html=True
+            )
         col_title, col1, col2 = st.columns([0.4, 2, 2])
 
         # ---- Main Filter text ----

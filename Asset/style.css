@@ -44,13 +44,27 @@ li[role="option"] {
     position: fixed;
     top: 2.875rem;
     z-index: 10000;
-    background: white;
-    padding: 20px 20px;
+    background: rgba(255, 255, 255, 1);
+    /* padding: 20px 20px; */
     margin-bottom: 10px;
+    margin-top: 50px;
+    margin-left: 0%;
+    margin-right: 0%;
     overflow: visible !important;
-}
-/* ========== END Main Filter ========== */
+    width: 90%;
 
+/* ========== END Main Filter ========== */
+}
+
+.st-key-main-financial-overview {
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow:
+        4px 4px 4px 4px rgba(0,0,0,0.04),
+        -1px -1px 4px 4px rgba(0,0,0,0.04);
+    border: none;
+    margin-top: 12%;
+}
 
 /* ========== START Container Berwarna ========== */
 /* Container Financial Highlight */
