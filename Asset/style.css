@@ -1,5 +1,4 @@
-/* Main Filter*/
-
+/* ========== START Main Filter ========== */
 .filter-row {
     display: flex;
     align-items: center;
@@ -26,7 +25,7 @@ li[role="option"] {
 
 .st-emotion-cache-1ikpmoq {
     border-radius: 16px;
-    background: #ffffff;
+    /* background: #FBEFED; */
     padding: 16px;
     box-shadow:
         4px 4px 4px 4px rgba(0,0,0,0.04),
@@ -34,20 +33,72 @@ li[role="option"] {
     border: none;
 } 
 
-/* HANYA container dengan border=True */
-div[data-testid="stVerticalBlock"][data-border="true"] {
-    border-radius: 16px;
-    background: #ffffff;
-    padding: 16px;
-    box-shadow:
-        4px 4px 4px 4px rgba(0,0,0,0.04),
-        -1px -1px 4px 4px rgba(0,0,0,0.04);
-    border: none;
-}
-
 #main-filter-card div[data-testid="stVerticalBlock"][data-border="true"] {
     border-radius: 18px;
     background-color: #ffffff;
     box-shadow: 0 0 8px 3px rgba(0,0,0,0.04);
     padding: 16px;
+}
+/* ========== END Main Filter ========== */
+
+
+/* ========== START Container Berwarna ========== */
+/* Container Financial Highlight */
+[class*="financial-highlight"]{
+    background: #FBEFED !important;
+}
+
+/* Container Financial Highlight */
+[class*="grid-financial"] {
+    background: #FFFDFD !important;
+}
+/* ========== END Container Berwarna ========== */
+
+
+/* ========== START TABS STYLE ========== */
+/* Tab aktif (text + underline) */
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #902922 !important;
+    font-weight: bolder !important;
+}
+
+/* Garis bawah tab aktif */
+button[data-baseweb="tab"][aria-selected="true"]::after {
+    background-color: #902922 !important;
+    font-weight: bolder !important;
+}
+
+/* Hover Tab*/
+button[data-baseweb="tab"]:hover {
+    color: #902922;
+    font-weight: bolder !important;
+}
+
+div[data-baseweb="tab-list"] button[aria-selected="true"] {
+    border-bottom: 2px solid #902922 !important;
+}
+/* ========== END TABS STYLE ========== */
+
+/* ========== START Smart Naratif Card ========== */
+#smart-naratif-card div[data-testid="stVerticalBlock"][data-border="true"] {
+    border-radius: 16px;
+    background-color: #FBEFED !important;
+    padding: 16px;
+    box-shadow:
+        4px 4px 4px 4px rgba(0,0,0,0.04),
+        -1px -1px 4px 4px rgba(0,0,0,0.04) !important;
+    border: none !important;
+}
+/* ========== END Smart Naratif Card ========== */
+
+/* EXPANDER WRAPPER */
+div[data-testid="stExpander"] > details {
+    border-radius: 16px;
+    padding: 16px;
+    border: none;
+    box-shadow:
+        4px 4px 4px 4px rgba(0,0,0,0.04),
+        -1px -1px 4px 4px rgba(0,0,0,0.04);
+    background: #FFFF;
+    overflow: hidden; /* penting biar radius kepake */
 }
