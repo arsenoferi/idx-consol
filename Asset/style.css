@@ -39,6 +39,17 @@ li[role="option"] {
     box-shadow: 0 0 8px 3px rgba(0,0,0,0.04);
     padding: 16px;
 }
+
+.st-key-filter-style {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 2.875rem;
+    z-index: 1000;
+    background: white;
+    padding: 20px 20px;
+    margin-bottom: 10px;
+    overflow: visible !important;
+}
 /* ========== END Main Filter ========== */
 
 

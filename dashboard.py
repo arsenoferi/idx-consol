@@ -75,46 +75,50 @@ with st.container(border=True):
     last_year = pd.to_datetime(filtered_data['Date']).max()
     last_year = last_year.date()
 
-    st.markdown(f"<h1 style='text-align: center;'>Financial Overview As of {last_year}</h1>", unsafe_allow_html=True)
+    # Format Date to "Month Year"
+    formatted_date = last_year.strftime("%B %Y") 
+
+    st.markdown(f"<h1 style='text-align: center;'>Financial Overview As of {formatted_date}</h1>", unsafe_allow_html=True)
     st.markdown(f"<h4 style='text-align: center; font-style: italic; text-align: center;'>This dashboard provides an overview of financial performance across all companies.<br></h4", unsafe_allow_html=True)
 
     # START Container Main Filter
-    col_title, col1, col2 = st.columns([0.4, 2, 2])
+    with st.container(border=True, key="filter-style"):
+        col_title, col1, col2 = st.columns([0.4, 2, 2])
 
-    # ---- Main Filter text ----
-    with col_title:
-        st.markdown(
-            "<div class='filter-title'>Main Filter:</div>",
-            unsafe_allow_html=True
-        )
+        # ---- Main Filter text ----
+        with col_title:
+            st.markdown(
+                "<div class='filter-title'>Main Filter:</div>",
+                unsafe_allow_html=True
+            )
 
-    # ---- Company filter ----
-    with col1:
-        option = st.selectbox(
-            "Companies",
-             ["All Companies"] + company_list,
-            label_visibility="collapsed"
-        )
+        # ---- Company filter ----
+        with col1:
+            option = st.selectbox(
+                "Companies",
+                ["All Companies"] + company_list,
+                label_visibility="collapsed"
+            )
 
-    # Apply company filter
-    if option != "All Companies":
-        filtered_data = data_loader()[data_loader()["Company"] == option]
-    else:
-        filtered_data = data_loader()
+        # Apply company filter
+        if option != "All Companies":
+            filtered_data = data_loader()[data_loader()["Company"] == option]
+        else:
+            filtered_data = data_loader()
 
-    # ---- Year filter ----
-    with col2:
+        # ---- Year filter ----
+        with col2:
 
-        years = filtered_data["Year"].unique().tolist()
-        selected_years = st.selectbox(
-            "Year",
-            ["All Years"] + sorted(years, reverse=True),
-            label_visibility="collapsed"
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
+            years = filtered_data["Year"].unique().tolist()
+            selected_years = st.selectbox(
+                "Year",
+                ["All Years"] + sorted(years, reverse=True),
+                label_visibility="collapsed"
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    if selected_years != "All Years":
-        filtered_data = filtered_data[filtered_data["Year"] <= selected_years]
+        if selected_years != "All Years":
+            filtered_data = filtered_data[filtered_data["Year"] <= selected_years]
 
     # END Container Main Filter
 
@@ -165,8 +169,10 @@ with st.container(border=True):
     # END Container 1-1 Financial Highlight
 
     # START Container 1-2 Trend Chart
-        st.markdown(f"<h2 style='text-align: center; font-style: bold;'><br>Trend Chart</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>Lorem ipsum dolor sit amet consectetur. Pellentesque vulputate id urna ultricies. Massa <br></h6>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    with st.container (border=True, key='financial-highlight-trend'):
+        st.markdown(f"<h2 style='text-align: center; font-style: bold;'>Trend Chart</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>Lorem ipsum dolor sit amet consectetur. Pellentesque vulputate id urna ultricies. Massa </h6>", unsafe_allow_html=True)
 
         tab1, tab2, tab3, tab4, tab5 = st.tabs(["Asset", "Liabilitas", "Ekuitas", "Revenue", "Expense"])    
         
