@@ -5,7 +5,7 @@ from typing import Union
 class General:
     def __init__(self, data: pd.DataFrame):
         self.data = data
-    
+
     def comparative_balance(self,beg_account_code,normal_balance='debit'):
         data = self.data
         data = data[data['LV 1'].str.startswith(beg_account_code)]
@@ -13,24 +13,31 @@ class General:
         if normal_balance == 'credit':
             data['Balance'] = data['Balance'] * -1
         
-        data = data.pivot_table(index='FSLI', columns='Date', values='Balance', aggfunc='sum')
-        
+        data = data.pivot_table(
+            index='FSLI', 
+            columns='Date', 
+            values='Balance', 
+            aggfunc='sum'
+        )
+
         # Sort columns by date descending (newest to oldest)
         data = data.sort_index(axis=1, ascending=False)
         
+        # Convert column names to datetime
+        data.columns = pd.to_datetime(data.columns)        
+        columns = list(data.columns)
+
         #selsish antar periode dalam bentuk decimal
-        columns = data.columns.tolist()
-        new_columns = []
         for i in range(len(columns)):
-            new_columns.append(columns[i])
             if i < len(columns) - 1:
                 # columns[i] is newer, columns[i+1] is older
+                label = columns[i].strftime("%B %Y")
                 # Selisih Absolut
-                abs_change_col = f"{columns[i]} (Δ Abs)"
+                abs_change_col = f"{label} (Δ Abs)"
                 data[abs_change_col] = data[columns[i]] - data[columns[i+1]]
                 
                 # Selisih Persentase
-                pct_change_col = f"{columns[i]} (Δ %)"
+                pct_change_col = f"{label} (Δ %)"
                 data[pct_change_col] = (data[columns[i]] - data[columns[i+1]]) / data[columns[i+1]]
         
         # Reorder columns to interleave date and change columns
@@ -38,22 +45,28 @@ class General:
         for i in range(len(columns)):
             final_columns.append(columns[i])
             if i < len(columns) - 1:
-                final_columns.append(f"{columns[i]} (Δ Abs)")
-                final_columns.append(f"{columns[i]} (Δ %)")
-        
+                label = columns[i].strftime("%B %Y")
+                final_columns.append(f"{label} (Δ Abs)")
+                final_columns.append(f"{label} (Δ %)")
+
         data = data[final_columns]
         
         # Format date columns with thousand separators, keep delta columns as decimals
         for col in data.columns:
-            if '(Δ %)' in col:
+            if isinstance(col, str) and'(Δ %)' in col:
                 # Kalikan dengan 100 untuk konversi ke persentase
                 data[col] = data[col] * 100
-            elif '(Δ Abs)' in col:
+            elif isinstance(col, str) and '(Δ Abs)' in col:
                 # Format value absolut dengan separator koma
-                data[col] = data[col].round(0).apply(lambda x: f"{int(x):,}" if pd.notna(x) else x)
+                data[col] = data[col].round(0).apply(lambda x: f"{int(x):,}".replace(",", ".") if pd.notna(x) else x)
             else:
-                data[col] = data[col].round(0).apply(lambda x: f"{int(x):,}" if pd.notna(x) else x)
-        
+                data[col] = data[col].round(0).apply(lambda x: f"{int(x):,}".replace(",", ".") if pd.notna(x) else x)
+
+        # ===== Format Date di Header Table =====
+        data = data.rename(
+            columns=lambda c: c.strftime("%B %Y") if isinstance(c, pd.Timestamp) else c
+        )
+                
         return data
 
     def extends_dataframe(self, df):

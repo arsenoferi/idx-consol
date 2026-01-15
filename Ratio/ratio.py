@@ -263,14 +263,20 @@ class FinancialAnalyst:
         # Sort columns by date descending (newest to oldest)
         revenue = revenue.sort_index(axis=1, ascending=False)
         
+        # Pastikan kolom datetime
+        revenue.columns = pd.to_datetime(revenue.columns)
+
         # Add change columns between periods
         columns = revenue.columns.tolist()
+        label_map = {}
         new_columns = []
         for i in range(len(columns)):
             new_columns.append(columns[i])
             if i < len(columns) - 1:
                 # columns[i] is newer, columns[i+1] is older
-                change_col = f"{columns[i+1]} (Δ)"
+                change_col = f"{columns[i+1].strftime('%B %Y')} (Δ)"
+                label_map[columns[i+1]] = change_col
+
                 revenue[change_col] = (revenue[columns[i]] - revenue[columns[i+1]]) * 100
         
         # Reorder columns to interleave date and change columns
@@ -278,7 +284,7 @@ class FinancialAnalyst:
         for i in range(len(columns)):
             final_columns.append(columns[i])
             if i < len(columns) - 1:
-                final_columns.append(f"{columns[i+1]} (Δ)")
+                final_columns.append(label_map[columns[i+1]])
         
         revenue = revenue[final_columns]
         
@@ -288,6 +294,11 @@ class FinancialAnalyst:
                 revenue[col] = revenue[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else x)
             else:
                 revenue[col] = revenue[col].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else x)
+
+        # ===== Format Date di Header Table =====
+        revenue = revenue.rename(
+            columns=lambda c: c.strftime("%B %Y") if isinstance(c, pd.Timestamp) else c
+        )
         
         return revenue
         

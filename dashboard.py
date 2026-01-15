@@ -124,10 +124,7 @@ with st.container(border=True,key='main-financial-overview'):
                 label_visibility="collapsed"
             )
         st.markdown("</div>", unsafe_allow_html=True)
-
-        if selected_years != "All Years":
-            filtered_data = filtered_data[filtered_data["Year"] <= selected_years]
-
+        
     # END Container Main Filter
 
     # ===== Downstream processing =====
@@ -182,7 +179,7 @@ with st.container(border=True,key='main-financial-overview'):
         st.markdown(f"<h2 style='text-align: center; font-style: bold;'>Trend Chart</h2>", unsafe_allow_html=True)
         st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>Lorem ipsum dolor sit amet consectetur. Pellentesque vulputate id urna ultricies. Massa </h6>", unsafe_allow_html=True)
 
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Asset", "Liabilitas", "Ekuitas", "Revenue", "Expense"])    
+        tab1, tab2, tab3, tab_bs, tab4, tab5, tab_pl = st.tabs(["Asset", "Liabilitas", "Ekuitas", "Balance Sheet", "Revenue", "Expense", "Profit & Loss"])    
         
         with tab1:
             # st.plotly_chart(chart.trends_chart('10','debit','Asset Trend Chart'), use_container_width=True)
@@ -200,6 +197,10 @@ with st.container(border=True,key='main-financial-overview'):
             ekuitas = GeneralFunction.comparative_balance('30','credit')
             GeneralFunction.extends_dataframe(ekuitas)
 
+        with tab_bs: 
+            # Chart untuk beberapa akun sekaligus
+            st.write(chart.trends_chart_multi(['10','20','30'],'Balance Sheet Trend'))
+
         with tab4:
             st.write(chart.trends_chart('40','credit','Revenue Trend Chart'))
             revenue = GeneralFunction.comparative_balance('40','credit')
@@ -209,6 +210,10 @@ with st.container(border=True,key='main-financial-overview'):
             st.write(chart.trends_chart('50','debit','Expense Trend Chart'))
             expense = GeneralFunction.comparative_balance('50','debit')
             GeneralFunction.extends_dataframe(expense)
+
+        with tab_pl:
+            # Chart untuk beberapa akun sekaligus
+            st.write(chart.trends_chart_multi(['40','50'],'Profit & Loss Trend'))
     
     # END Container 1-2 Trend Chart
 
@@ -288,13 +293,13 @@ with st.container(border=True,key='main-financial-overview'):
     # END Container 1-4: Expense to Revenue Ratio
 
 # START Container 2: Smart Naratif
-with st.container(border=False, key="smart naratif"):
+with st.container(border=False, key="smart-naratif"):
     with st.expander("Smart Naratif"):
-            with st.container(border=True, key="financial-highlight-smart1"):
+        with st.container(border=True, key="financial-highlight-smart1"):
                 st.markdown("#### Kas dan Setara Kas Analysis")
                 text ="Kas dan setara kas per 31 December 2024 mengalami penurunan sebesar -Rp466 miliar atau sebesar -25% dibandingkan saldo periode sebelumnya. Persentase penurunan nilai akun Kas dan setara kas ini lebih kecil dibandingkan perubahan rata-rata pada tahun 2021-2023 sebesar 7% (pada tahun 2023, 2022, dan 2021 masing-masing sebesar -4%, -2%, dan 27%). Penurunan nilai akun Kas dan setara kas ini mewakili -69% dari penurunan total aset pada periode yang sama. Secara vertikal, Kas dan setara kas per 31 December 2024 memiliki porsi sebesar 13% dari total aset pada periode yang sama."
                 st.write(text)
-            with st.container(border=True, key="financial-highlight-smart2"):
+        with st.container(border=True, key="financial-highlight-smart2"):
                 st.markdown("#### Pajak dibayar dimuka Analysis")
                 text ="Pajak dibayar dimuka per 31 December 2024 mengalami peningkatan sebesar Rp19,5 miliar atau sebesar 720% dibandingkan saldo periode sebelumnya. Persentase peningkatan nilai akun Pajak dibayar dimuka ini lebih besar dibandingkan perubahan rata-rata pada tahun 2021-2023 sebesar -36% (pada tahun 2023, 2022, dan 2021 masing-masing sebesar -38%, -52%, dan -18%). Peningkatan nilai akun Pajak dibayar dimuka ini mewakili 3% dari penurunan total aset pada periode yang sama. Secara vertikal, Pajak dibayar dimuka per 31 December 2024 memiliki porsi sebesar 0% dari total aset pada periode yang sama."
                 st.write(text)
