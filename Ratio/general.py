@@ -166,11 +166,11 @@ class General:
         grid_options = gb.build()
 
         # ===== AUTO SIZE JS =====
-        auto_size_js = JsCode("""
-            function(params) {
-                params.columnApi.autoSizeColumns(['FSLI']);  // kolom yang ingin auto-fit
-            }
-        """)
+        #auto_size_js = JsCode("""
+        #    function(params) {
+        #        params.columnApi.autoSizeColumns(['FSLI']);  // kolom yang ingin auto-fit
+        #    }
+        #""")
 
         AgGrid(
             df,
@@ -180,7 +180,7 @@ class General:
             width='100%',
             allow_unsafe_jscode=True,
             theme="alpine",
-            custom_js=auto_size_js,
+            #custom_js=auto_size_js,
             custom_css={
                 ".ag-header-cell-label": {
                     "font-weight": "normal"
