@@ -124,7 +124,7 @@ with st.container(border=True,key='main-financial-overview'):
                 label_visibility="collapsed"
             )
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
     # END Container Main Filter
 
     # ===== Downstream processing =====
@@ -135,7 +135,7 @@ with st.container(border=True,key='main-financial-overview'):
     # START Container 1-1 Financial Highlight
     with st.container (border=True, key='financial-highlight'):
         st.markdown(f"<h2 style='text-align: center; font-style: bold;'>Financial Highlight</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>This dashboard provides an overview of financial performance across all companies.<br></h6>", unsafe_allow_html=True)
+        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>This section explains the total of each component in the financial statements.<br></h6>", unsafe_allow_html=True)
 
         col_1,col_2,col_3 = st.columns(3)
 
@@ -177,9 +177,17 @@ with st.container(border=True,key='main-financial-overview'):
     st.markdown("<br>", unsafe_allow_html=True)
     with st.container (border=True, key='financial-highlight-trend'):
         st.markdown(f"<h2 style='text-align: center; font-style: bold;'>Trend Chart</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>Lorem ipsum dolor sit amet consectetur. Pellentesque vulputate id urna ultricies. Massa </h6>", unsafe_allow_html=True)
+        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>This section explains the annual trends for each component in the financial statements. </h6>", unsafe_allow_html=True)
 
-        tab1, tab2, tab3, tab_bs, tab4, tab5, tab_pl = st.tabs(["Asset", "Liabilitas", "Ekuitas", "Balance Sheet", "Revenue", "Expense", "Profit & Loss"])    
+        tab_bs, tab_pl, tab1, tab2, tab3, tab4, tab5 = st.tabs(["Balance Sheet", "Profit & Loss", "Asset", "Liabilitas", "Ekuitas", "Revenue", "Expense"])    
+
+        with tab_bs: 
+            # Chart untuk beberapa akun sekaligus
+            st.write(chart.trends_chart_multi(['10','20','30'],'Balance Sheet Trend'))
+
+        with tab_pl:
+            # Chart untuk beberapa akun sekaligus
+            st.write(chart.trends_chart_multi(['40','50'],'Profit & Loss Trend'))
         
         with tab1:
             # st.plotly_chart(chart.trends_chart('10','debit','Asset Trend Chart'), use_container_width=True)
@@ -197,10 +205,6 @@ with st.container(border=True,key='main-financial-overview'):
             ekuitas = GeneralFunction.comparative_balance('30','credit')
             GeneralFunction.extends_dataframe(ekuitas)
 
-        with tab_bs: 
-            # Chart untuk beberapa akun sekaligus
-            st.write(chart.trends_chart_multi(['10','20','30'],'Balance Sheet Trend'))
-
         with tab4:
             st.write(chart.trends_chart('40','credit','Revenue Trend Chart'))
             revenue = GeneralFunction.comparative_balance('40','credit')
@@ -210,10 +214,6 @@ with st.container(border=True,key='main-financial-overview'):
             st.write(chart.trends_chart('50','debit','Expense Trend Chart'))
             expense = GeneralFunction.comparative_balance('50','debit')
             GeneralFunction.extends_dataframe(expense)
-
-        with tab_pl:
-            # Chart untuk beberapa akun sekaligus
-            st.write(chart.trends_chart_multi(['40','50'],'Profit & Loss Trend'))
     
     # END Container 1-2 Trend Chart
 
@@ -221,7 +221,7 @@ with st.container(border=True,key='main-financial-overview'):
     st.markdown("<br>", unsafe_allow_html=True)
     with st.container(border=True, key='financial-highlight-2'):
         st.markdown(f"<h2 style='text-align: center; font-style: bold;padding-top: 20px;'>Financial Ratio</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>Lorem ipsum dolor sit amet consectetur. Pellentesque vulputate id urna ultricies. Massa <br></h6>", unsafe_allow_html=True)
+        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>This section explains the key financial ratios derived from the financial statements.<br></h6>", unsafe_allow_html=True)
         
         col_1,col_2,col_3,col_4 = st.columns(4)
 
@@ -264,32 +264,70 @@ with st.container(border=True,key='main-financial-overview'):
     st.markdown("<br>", unsafe_allow_html=True)
     with st.container(border=True, key='financial-highlight-expense'):
         st.markdown(f"<h2 style='text-align: center; font-style: bold;'>Expense to Revenue Ratio</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>Lorem ipsum dolor sit amet consectetur. Pellentesque vulputate id urna ultricies. Massa <br></h6>", unsafe_allow_html=True)
+        st.markdown(f"<h6 style='text-align: center; font-style: italic; text-align: center;'>This section explains the annual Expense to Revenue Ratio, indicating year-to-year changes in expenses relative to revenue. <br></h6>", unsafe_allow_html=True)
         
         with st.container(border=True, key="grid-financial-highlight-expense"):
             df = FinancialRatio.expense_to_revenue_ratio()
+
+            # Ubah tipe data kolom delta dan non-delta menjadi int/float
+            delta_cols = [col for col in df.columns if '(Δ)' in str(col)]
+            non_delta_cols = [col for col in df.columns if col not in delta_cols]
+
+            for col in delta_cols:
+                df[col] = (
+                    df[col]
+                    .astype(str)
+                    .str.replace('%', '', regex=False)
+                    .replace(['nan', 'None', ''], pd.NA)
+                    .astype(float)
+                )
             
+            for col in non_delta_cols:
+                df[col] = (
+                    df[col]
+                    .astype(str)
+                    .str.replace('%', '', regex=False)
+                    .replace(['nan', 'None', '', '-'], pd.NA)
+                    .astype(float)
+                )
+
             # Function to apply color styling - hanya untuk kolom delta (Δ)
-            def style_changes(val):
-                if isinstance(val, str) and '%' in val:
-                    try:
-                        num_val = float(val.replace('%', ''))
-                        if num_val > 0:
-                            return 'color: green'
-                        elif num_val < 0:
-                            return 'color: red'
-                    except:
-                        pass
+            def style_delta(val):
+                if pd.isna(val):
+                    return ''
+                if isinstance(val, (int, float)):
+                    if val > 0:
+                        return 'color: green'
+                    elif val < 0:
+                        return 'color: red'
                 return ''
             
-            # Dapatkan hanya kolom dengan (Δ)
-            delta_cols = [col for col in df.columns if '(Δ)' in str(col)]
-            
-            # Apply styling hanya pada kolom delta
-            styled_df = df.style.map(style_changes, subset=delta_cols)
-            
-            st.dataframe(styled_df)
-        
+            # Format persen dengan 2 desimal (otomatis rata kanan untuk angka)
+            column_config = {}
+
+            # col Δ -> persen, 2 desimal
+            for col in delta_cols:
+                column_config[col] = st.column_config.NumberColumn(
+                    col,
+                    format="%.2f%%"
+                )
+
+            # non Δ -> angka biasa, 2 desimal
+            numeric_cols = df.select_dtypes(include='number').columns
+            for col in numeric_cols:
+                if col not in delta_cols:
+                    column_config[col] = st.column_config.NumberColumn(
+                        col,
+                        format="%.2f%%"
+                    )
+                                
+            # Membuat dictionary untuk column_config
+            st.dataframe(
+                df.style.applymap(style_delta, subset=delta_cols),
+                column_config=column_config,
+                hide_index=True
+            )
+                
     # END Container 1-4: Expense to Revenue Ratio
 
 # START Container 2: Smart Naratif

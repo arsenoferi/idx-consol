@@ -85,6 +85,12 @@ li[role="option"] {
 [class*="grid-financial"] {
     background: #FFFDFD !important;
 }
+
+.st-key-grid-financial-highlight-expense {
+    text-align: right !important;
+    justify-content: right !important;
+    justify-items: right !important ;
+}
 /* ========== END Container Berwarna ========== */
 
 

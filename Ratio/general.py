@@ -32,6 +32,7 @@ class General:
             if i < len(columns) - 1:
                 # columns[i] is newer, columns[i+1] is older
                 label = columns[i].strftime("%B %Y")
+
                 # Selisih Absolut
                 abs_change_col = f"{label} (Δ Abs)"
                 data[abs_change_col] = data[columns[i]] - data[columns[i+1]]
@@ -58,18 +59,19 @@ class General:
                 data[col] = data[col] * 100
             elif isinstance(col, str) and '(Δ Abs)' in col:
                 # Format value absolut dengan separator koma
-                data[col] = data[col].round(0).apply(lambda x: f"{int(x):,}".replace(",", ".") if pd.notna(x) else x)
+                data[col] = data[col].round(0)
             else:
-                data[col] = data[col].round(0).apply(lambda x: f"{int(x):,}".replace(",", ".") if pd.notna(x) else x)
+                data[col] = data[col].round(0)
 
         # ===== Format Date di Header Table =====
         data = data.rename(
             columns=lambda c: c.strftime("%B %Y") if isinstance(c, pd.Timestamp) else c
         )
-                
+
         return data
 
     def extends_dataframe(self, df):
+
         # Fungsi untuk styling dataframe - hijau jika positif, merah jika negatif
         def style_balance_changes(val):
             if isinstance(val, str):
@@ -93,13 +95,17 @@ class General:
         column_config = {}
         
         for col in df.columns:
-            if '(Δ %)' in col:
+            if isinstance(col, str) and '(Δ %)' in col:
                 # Format kolom dengan (Δ %) sebagai persentase
                 column_config[col] = st.column_config.NumberColumn(
                     col,
                     format="%.2f%%",
                 )
-        
+            elif col != 'FSLI':
+                column_config[col] = st.column_config.NumberColumn(
+                    col,
+                    format="localized",
+                )
         # Dapatkan kolom dengan delta
         delta_cols = [col for col in df.columns if '(Δ' in col]
         
