@@ -77,7 +77,7 @@ class General:
 
         df = df.reset_index()
 
-         # Hitung panjang text kolom FSLI
+        # Hitung panjang text kolom FSLI
         if 'FSLI' in df.columns:
             max_len = df['FSLI'].astype(str).map(len).max()
             width = max(100, min(max_len * 10, 400))  # perkiraan 10 px per karakter

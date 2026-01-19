@@ -9,5 +9,9 @@
 !/data_cleaning.ipynb
 !/Asset/
 !/.streamlit/
+!/requirements.txt
+!/Docekerfile
+!/docker-compose.yml
+!/.dockerignore
 
 # End of file
