@@ -258,47 +258,43 @@ class FinancialAnalyst:
         ratio['Expense to Revenue Ratio'] = ratio['Balance_expense'] / ratio['Balance_revenue']
             
         ratio = ratio.reset_index()
-        revenue = ratio.pivot_table(index='FSLI', columns='Date', values='Expense to Revenue Ratio')
+        # ===== Pivot untuk tampilan table =====
+        table = ratio.pivot_table(index='FSLI', columns='Date', values='Expense to Revenue Ratio')
         
-        # Sort columns by date descending (newest to oldest)
-        revenue = revenue.sort_index(axis=1, ascending=False)
-        
-        # Pastikan kolom datetime
-        revenue.columns = pd.to_datetime(revenue.columns)
+        # Sort columns descending
+        table = table.sort_index(axis=1, ascending=False)
+        table.columns = pd.to_datetime(table.columns)
 
-        # Add change columns between periods
-        columns = revenue.columns.tolist()
-        label_map = {}
-        new_columns = []
+         # ===== Tambah Δ columns =====
+        columns = table.columns.tolist()
+        delta_cols = []
+        for i in range(len(columns)-1):
+            change_col = f"{columns[i+1].strftime('%B %Y')} (Δ)"
+            delta_cols.append(change_col)
+            table[change_col] = (table[columns[i]] - table[columns[i+1]]) * 100  # numeric, belum string
+
+        # ===== Interleave columns date & Δ =====
+        final_cols = []
         for i in range(len(columns)):
-            new_columns.append(columns[i])
-            if i < len(columns) - 1:
-                # columns[i] is newer, columns[i+1] is older
-                change_col = f"{columns[i+1].strftime('%B %Y')} (Δ)"
-                label_map[columns[i+1]] = change_col
+            final_cols.append(columns[i])
+            if i < len(columns)-1:
+                final_cols.append(delta_cols[i])
 
-                revenue[change_col] = (revenue[columns[i]] - revenue[columns[i+1]]) * 100
-        
-        # Reorder columns to interleave date and change columns
-        final_columns = []
-        for i in range(len(columns)):
-            final_columns.append(columns[i])
-            if i < len(columns) - 1:
-                final_columns.append(label_map[columns[i+1]])
-        
-        revenue = revenue[final_columns]
-        
-        # Format values - convert to percentage for all columns
-        for col in revenue.columns:
-            if "(Δ)" in str(col):
-                revenue[col] = revenue[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else x)
-            else:
-                revenue[col] = revenue[col].apply(lambda x: f"{x*100:.2f}%" if pd.notna(x) else x)
+        table = table[final_cols]
 
-        # ===== Format Date di Header Table =====
-        revenue = revenue.rename(
-            columns=lambda c: c.strftime("%B %Y") if isinstance(c, pd.Timestamp) else c
-        )
-        
-        return revenue
-        
+        # ===== Reset index supaya FSLI muncul =====
+        table = table.reset_index()
+
+        # ===== Format hanya kolom numeric =====
+        for col in table.columns:
+            if pd.api.types.is_numeric_dtype(table[col]):
+                if "(Δ)" in str(col):
+                    table[col] = table[col].map(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+                else:
+                    table[col] = table[col].map(lambda x: f"{x*100:.2f}%" if pd.notna(x) else "")
+
+        # ===== Format header tanggal =====
+        table = table.rename(columns=lambda c: c.strftime("%B %Y") if isinstance(c, pd.Timestamp) else c)
+
+        return table
+            

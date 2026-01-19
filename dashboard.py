@@ -52,80 +52,75 @@ def load_css(path):
 
 load_css("asset/style.css")
 
-# Dashboard Title (centered)
-company_list = data_loader()['Company'].unique().tolist() 
-
-# col1, col2 = st.columns([1, 15], gap="small")
-# # with col1:
-# #     st.image("Asset/Favicion.png", width=80)
-
-# # with col2:
-# #     st.markdown(
-# #         "<h2 style='margin:0; text-align:left;'>Financial Dashboard<br></h2>",
-# #         unsafe_allow_html=True
-# #     )
-
 #Container 1: Financial Overview As of 2023-12-31
+
+# START Container Main Filter
+filtered_data = data_loader()
+with st.container(border=True, key="filter-style"):
+    col_logo,col_bursa= st.columns([1,15], gap="small")
+    with col_logo:
+        st.image("Asset/Favicion.png", width=50)
+    with col_bursa:
+        st.markdown(
+            "<h2 style='margin:0; text-align:left;'>Financial Dashboard<br></h2>",
+            unsafe_allow_html=True
+        )
+    col_title, col1, col2 = st.columns([0.4, 2, 2])
+
+    # ---- Main Filter text ----
+    with col_title:
+        st.markdown(
+            "<div class='filter-title'>Main Filter:</div>",
+            unsafe_allow_html=True
+        )
+
+    # ---- Company filter ----
+    with col1:
+        company_list = data_loader()['Company'].unique().tolist() 
+        option = st.selectbox(
+            "Companies",
+            ["All Companies"] + sorted(company_list,reverse=True),
+            label_visibility="collapsed"
+        )
+
+        # Apply company filter
+        if option != "All Companies":
+            filtered_data = data_loader()[data_loader()["Company"] == option]
+
+    # ---- Year filter ----
+    with col2:
+        years = filtered_data["Year"].unique().tolist()
+        selected_years = st.selectbox(
+            "Year",
+            ["All Years"] + sorted(years, reverse=True),
+            label_visibility="collapsed"
+        )
+
+# END Container Main Filter
 
 st.markdown("<div id='main-filter-card'>", unsafe_allow_html=True)
 with st.container(border=True,key='main-financial-overview'):
 
     # Title Container 1
-    filtered_data = data_loader()
     last_year = pd.to_datetime(filtered_data['Date']).max()
     last_year = last_year.date()
 
     # Format Date to "Month Year"
     formatted_date = last_year.strftime("%B %Y") 
 
+    # Dynamic description text based on company filter
+
+    # Dynamic company text for description
+    if option == "All Companies":
+            company_text = "across all companies"
+    else:
+            company_text = f"in {option}"
+   
     st.markdown(f"<h1 style='text-align: center;'>Financial Overview As of {formatted_date}</h1>", unsafe_allow_html=True)
-    st.markdown(f"<h4 style='text-align: center; font-style: italic; text-align: center;'>This dashboard provides an overview of financial performance across all companies.<br></h4", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center; font-style: italic; text-align: center;'>This dashboard provides an overview of financial performance {company_text}.<br></h4", unsafe_allow_html=True)
 
-    # START Container Main Filter
-    with st.container(border=True, key="filter-style"):
-        col_logo,col_bursa= st.columns([1,15], gap="small")
-        with col_logo:
-            st.image("Asset/Favicion.png", width=50)
-        with col_bursa:
-            st.markdown(
-                "<h2 style='margin:0; text-align:left;'>Financial Dashboard<br></h2>",
-                unsafe_allow_html=True
-            )
-        col_title, col1, col2 = st.columns([0.4, 2, 2])
-
-        # ---- Main Filter text ----
-        with col_title:
-            st.markdown(
-                "<div class='filter-title'>Main Filter:</div>",
-                unsafe_allow_html=True
-            )
-
-        # ---- Company filter ----
-        with col1:
-            option = st.selectbox(
-                "Companies",
-                ["All Companies"] + company_list,
-                label_visibility="collapsed"
-            )
-
-        # Apply company filter
-        if option != "All Companies":
-            filtered_data = data_loader()[data_loader()["Company"] == option]
-        else:
-            filtered_data = data_loader()
-
-        # ---- Year filter ----
-        with col2:
-
-            years = filtered_data["Year"].unique().tolist()
-            selected_years = st.selectbox(
-                "Year",
-                ["All Years"] + sorted(years, reverse=True),
-                label_visibility="collapsed"
-            )
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # END Container Main Filter
+    if selected_years != 'All Years':
+        filtered_data = filtered_data[filtered_data['Year']<= selected_years]
 
     # ===== Downstream processing =====
     FinancialRatio = FinancialAnalyst(filtered_data)
@@ -142,34 +137,34 @@ with st.container(border=True,key='main-financial-overview'):
         with col_1 :
             with st.container(border=True, key='grid-financial-highlight'):
                 data_rev, val_terakhir, growth_terakhir = FinancialRatio.asset()
-                st.metric(label="Total Asset", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+                st.metric(label="Total Asset", value=f"Rp {val_terakhir/ 1e6:,.0f} M".replace(',','.'),delta=f"{growth_terakhir:.2f}%")
 
         with col_2 :
             with st.container(border=True, key='grid-financial-highlight-2'):
                 data_rev, val_terakhir, growth_terakhir = FinancialRatio.liabilitas()
-                st.metric(label="Total Liabilitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+                st.metric(label="Total Liabilitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M".replace(',','.'),delta=f"{growth_terakhir:.2f}%")
 
         with col_3 :
             with st.container(border=True, key='grid-financial-highlight-3'):
                 data_rev, val_terakhir, growth_terakhir = FinancialRatio.ekuitas()
-                st.metric(label="Total ekuitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+                st.metric(label="Total ekuitas", value=f"Rp {val_terakhir/ 1e6:,.0f} M".replace(',','.'),delta=f"{growth_terakhir:.2f}%")
 
         col_4,col_5,col_6 = st.columns(3)
 
         with col_4 :
             with st.container(border=True, key='grid-financial-highlight-4'):
                 data_rev, val_terakhir, growth_terakhir = FinancialRatio.net_income()
-                st.metric(label="Total Net Income", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+                st.metric(label="Total Net Income", value=f"Rp {val_terakhir/ 1e6:,.0f} M".replace(',','.'),delta=f"{growth_terakhir:.2f}%")
 
         with col_5 :
             with st.container(border=True, key='grid-financial-highlight-5'):
                 data_rev, val_terakhir, growth_terakhir = FinancialRatio.revenue()
-                st.metric(label="Total Revenue", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+                st.metric(label="Total Revenue", value=f"Rp {val_terakhir/ 1e6:,.0f} M".replace(',','.'),delta=f"{growth_terakhir:.2f}%")
 
         with col_6 :
             with st.container(border=True, key='grid-financial-highlight-6'):
                 data_rev, val_terakhir, growth_terakhir = FinancialRatio.expense()
-                st.metric(label="Total Expense", value=f"Rp {val_terakhir/ 1e6:,.0f} M",delta=f"{growth_terakhir:.2f}%")
+                st.metric(label="Total Expense", value=f"Rp {val_terakhir/ 1e6:,.0f} M".replace(',','.'),delta=f"{growth_terakhir:.2f}%")
         
     # END Container 1-1 Financial Highlight
 
@@ -271,14 +266,14 @@ with st.container(border=True,key='main-financial-overview'):
 
             # Ubah tipe data kolom delta dan non-delta menjadi int/float
             delta_cols = [col for col in df.columns if '(Δ)' in str(col)]
-            non_delta_cols = [col for col in df.columns if col not in delta_cols]
+            non_delta_cols = [col for col in df.columns if col not in delta_cols and 'FSLI' not in str(col)]
 
             for col in delta_cols:
                 df[col] = (
                     df[col]
                     .astype(str)
                     .str.replace('%', '', regex=False)
-                    .replace(['nan', 'None', ''], pd.NA)
+                    .replace(['nan', 'None', '', '-'], pd.NA)
                     .astype(float)
                 )
             

@@ -2,6 +2,9 @@ import pandas as pd
 import streamlit as st
 from typing import Union
 
+from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid.shared import JsCode
+
 class General:
     def __init__(self, data: pd.DataFrame):
         self.data = data
@@ -72,45 +75,115 @@ class General:
 
     def extends_dataframe(self, df):
 
-        # Fungsi untuk styling dataframe - hijau jika positif, merah jika negatif
-        def style_balance_changes(val):
-            if isinstance(val, str):
-                try:
-                    # Hapus komma dan konversi ke float untuk cek nilai
-                    num_val = float(val.replace('%', '').replace(',', ''))
-                    if num_val > 0:
-                        return 'color: green'
-                    elif num_val < 0:
-                        return 'color: red'
-                except:
-                    return ''
-            elif isinstance(val, (int, float)):
-                if val > 0:
-                    return 'color: green'
-                elif val < 0:
-                    return 'color: red'
-            return ''
-        
-        # Membuat dictionary untuk column_config
-        column_config = {}
-        
+        df = df.reset_index()
+
+         # Hitung panjang text kolom FSLI
+        if 'FSLI' in df.columns:
+            max_len = df['FSLI'].astype(str).map(len).max()
+            width = max(100, min(max_len * 10, 400))  # perkiraan 10 px per karakter
+        else:
+            width = 120
+
+        gb = GridOptionsBuilder.from_dataframe(df)
+
+        # Default column behaviour
+        gb.configure_default_column(
+            sortable=True,
+            filter=True,
+            resizable=True,
+            width=120,
+            cellStyle={"textAlign": "right"},
+            flex=1,
+        )
+
+        # ===== JS FORMATTER =====
+
+        # Indonesia Currency
+        id_number_formatter = JsCode("""
+            function(params) {
+                if (params.value === null || params.value === undefined) return '';
+                return params.value.toLocaleString('id-ID');
+            }
+        """)
+
+        # US percent: 12.34%
+        id_percent_formatter = JsCode("""
+            function(params) {
+                if (params.value === null || params.value === undefined) return '';
+                return params.value.toLocaleString(
+                    'us-US',
+                    {minimumFractionDigits: 2, maximumFractionDigits: 2}
+                ) + '%';
+            }
+        """)
+
+        # Delta Color Styling
+        delta_color = JsCode("""
+            function(params) {
+                if (params.value > 0) {
+                    return {color: 'green'};
+                }
+                if (params.value < 0) {
+                    return {color: 'red'};
+                }
+            }
+        """)
+
+        # ===== COLUMN CONFIG =====
         for col in df.columns:
             if isinstance(col, str) and '(Δ %)' in col:
-                # Format kolom dengan (Δ %) sebagai persentase
-                column_config[col] = st.column_config.NumberColumn(
+                gb.configure_column(
                     col,
-                    format="%.2f%%",
+                    type=["numericColumn"],
+                    valueFormatter=id_percent_formatter,
+                    cellStyle=delta_color,
                 )
+
+            elif isinstance(col, str) and '(Δ Abs)' in col:
+                gb.configure_column(
+                    col,
+                    type=["numericColumn"],
+                    valueFormatter=id_number_formatter,
+                    cellStyle=delta_color,
+                )
+
             elif col != 'FSLI':
-                column_config[col] = st.column_config.NumberColumn(
+                gb.configure_column(
                     col,
-                    format="localized",
+                    type=["numericColumn"],
+                    valueFormatter=id_number_formatter,
                 )
-        # Dapatkan kolom dengan delta
-        delta_cols = [col for col in df.columns if '(Δ' in col]
-        
-        # Apply styling pada kolom dengan delta
-        styled_df = df.style.applymap(style_balance_changes, subset=delta_cols)
-        
-        # Menampilkan dataframe dengan konfigurasi kolom dan styling
-        st.dataframe(styled_df, column_config=column_config, use_container_width=True)
+
+            else:
+                gb.configure_column(
+                    col,
+                    pinned="left",
+                    width=width,
+                    cellStyle={"textAlign": "left"},
+                    flex=0,
+                )
+
+        grid_options = gb.build()
+
+        # ===== AUTO SIZE JS =====
+        auto_size_js = JsCode("""
+            function(params) {
+                params.columnApi.autoSizeColumns(['FSLI']);  // kolom yang ingin auto-fit
+            }
+        """)
+
+        AgGrid(
+            df,
+            gridOptions=grid_options,
+            fit_columns_on_grid_load=True,
+            height=450,
+            width='100%',
+            allow_unsafe_jscode=True,
+            theme="alpine",
+            custom_js=auto_size_js,
+            custom_css={
+                ".ag-header-cell-label": {
+                    "font-weight": "normal"
+                }
+            }
+        )

@@ -43,7 +43,7 @@ li[role="option"] {
 #main-filter-card div[data-testid="stVerticalBlock"][data-border="true"] {
     border-radius: 18px;
     background-color: #ffffff;
-    box-shadow: 0 0 8px 3px rgba(0,0,0,0.04);
+    box-shadow: none;
     padding: 16px;
 }
 
@@ -57,8 +57,8 @@ li[role="option"] {
     /* padding: 20px 20px; */
     margin-bottom: 10px;
     margin-top: 50px;
-    margin-left: 0%;
-    margin-right: 0%;
+    margin-left: 10px;
+    margin-right: 10px;
     overflow: visible !important;
     width: 90%;
     transition: all 0.3s ease;
