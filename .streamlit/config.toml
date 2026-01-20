@@ -4,3 +4,7 @@ backgroundColor="#ffffff"
 secondaryBackgroundColor="#f9fafb"
 textColor="#111111"
 primaryColor="#2563eb"
+
+
+[server]
+allow_unsafe_jscode = true

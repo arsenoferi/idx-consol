@@ -6,7 +6,7 @@ services:
     image: bei_integration
     container_name: bei_integration_container
     ports:
-      - "80:8080"
+      - "8080:8080"
     volumes:
       - ./:/app 
     restart: always

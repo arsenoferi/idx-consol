@@ -75,30 +75,25 @@ class General:
 
     def extends_dataframe(self, df):
 
-        df = df.reset_index()
+        df = df.copy()
 
-        # Hitung panjang text kolom FSLI
-        if 'FSLI' in df.columns:
-            max_len = df['FSLI'].astype(str).map(len).max()
-            width = max(100, min(max_len * 10, 400))  # perkiraan 10 px per karakter
-        else:
-            width = 120
+        # Pastikan FSLI adalah kolom
+        if df.index.name == "FSLI":
+            df = df.reset_index()
+            
+        for col in df.columns:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                df[col] = df[col].astype(float)
 
         gb = GridOptionsBuilder.from_dataframe(df)
 
-        # Default column behaviour
         gb.configure_default_column(
             sortable=True,
             filter=True,
             resizable=True,
-            width=120,
             cellStyle={"textAlign": "right"},
-            flex=1,
         )
 
-        # ===== JS FORMATTER =====
-
-        # Indonesia Currency
         id_number_formatter = JsCode("""
             function(params) {
                 if (params.value === null || params.value === undefined) return '';
@@ -106,7 +101,6 @@ class General:
             }
         """)
 
-        # US percent: 12.34%
         id_percent_formatter = JsCode("""
             function(params) {
                 if (params.value === null || params.value === undefined) return '';
@@ -117,7 +111,6 @@ class General:
             }
         """)
 
-        # Delta Color Styling
         delta_color = JsCode("""
             function(params) {
                 if (params.value > 0) {
@@ -129,7 +122,6 @@ class General:
             }
         """)
 
-        # ===== COLUMN CONFIG =====
         for col in df.columns:
             if isinstance(col, str) and '(Δ %)' in col:
                 gb.configure_column(
@@ -138,7 +130,6 @@ class General:
                     valueFormatter=id_percent_formatter,
                     cellStyle=delta_color,
                 )
-
             elif isinstance(col, str) and '(Δ Abs)' in col:
                 gb.configure_column(
                     col,
@@ -146,44 +137,34 @@ class General:
                     valueFormatter=id_number_formatter,
                     cellStyle=delta_color,
                 )
-
             elif col != 'FSLI':
                 gb.configure_column(
                     col,
                     type=["numericColumn"],
                     valueFormatter=id_number_formatter,
                 )
-
             else:
                 gb.configure_column(
                     col,
                     pinned="left",
-                    width=width,
                     cellStyle={"textAlign": "left"},
-                    flex=0,
+                    width=270,
                 )
-
+        
         grid_options = gb.build()
 
-        # ===== AUTO SIZE JS =====
-        #auto_size_js = JsCode("""
-        #    function(params) {
-        #        params.columnApi.autoSizeColumns(['FSLI']);  // kolom yang ingin auto-fit
-        #    }
-        #""")
 
         AgGrid(
             df,
             gridOptions=grid_options,
+            enable_enterprise_modules=False,
             fit_columns_on_grid_load=True,
-            height=450,
-            width='100%',
             allow_unsafe_jscode=True,
             theme="alpine",
-            #custom_js=auto_size_js,
-            custom_css={
-                ".ag-header-cell-label": {
-                    "font-weight": "normal"
+            custom_css={".ag-header-cell-label": {
+                    "font-weight": "normal",
+                    "width": "100%",
+                    "height": "auto",
                 }
-            }
+},
         )
